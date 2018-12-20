@@ -3,10 +3,12 @@ ENV INITSYSTEM on
 
 WORKDIR /root/
 
-RUN buildDeps='build-essential cmake unzip pkg-config wget libjpeg-dev libpng-dev libtiff-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libatlas-base-dev gfortran python3-dev python3-pip' \
+RUN buildDeps='build-essential cmake unzip pkg-config wget gfortran python3-dev python3-pip' \
+    && runDeps='libjpeg-dev libpng-dev libtiff-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev libx264-dev libatlas-base-dev python3' \
     && set -x \
     && apt-get update \
     && apt-get install -y $buildDeps --no-install-recommends  \
+    && apt-get install -y $runDeps --no-install-recommends  \
     && rm -rf /var/lib/apt/lists/* \
     && pip3 install numpy \
     && wget -O opencv.zip https://github.com/opencv/opencv/archive/4.0.0.zip \
@@ -15,12 +17,12 @@ RUN buildDeps='build-essential cmake unzip pkg-config wget libjpeg-dev libpng-de
     && unzip opencv_contrib.zip \
     && mv opencv-4.0.0 opencv \
     && mv opencv_contrib-4.0.0 opencv_contrib \
-    && cd ~/opencv \
+    && cd ./opencv \
     && mkdir build \
     && cd build \
     && cmake -D CMAKE_BUILD_TYPE=RELEASE \
     -D CMAKE_INSTALL_PREFIX=/usr/local \
-    -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib/modules \
+    -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
     -D ENABLE_NEON=ON \
     -D ENABLE_VFPV3=ON \
     -D BUILD_TESTS=OFF \
@@ -33,13 +35,7 @@ RUN buildDeps='build-essential cmake unzip pkg-config wget libjpeg-dev libpng-de
     .. \
     && make -j4 install \
     && ldconfig \
-    && cd /root/opencv/build/python_loader \
+    && cd ../../opencv/build/python_loader \
     && python3 setup.py install \
+    && cd /root && rm -r opencv* \
     && apt-get remove -y $buildDeps
-
-RUN runDeps='libjpeg libpng libtiff libavcodec libavformat libswscale libv4l libxvidcore libx264 libatlas-base python3 python3-pip' \
-    && set -x \
-    && apt-get update \
-    && apt-get install -y $runDeps --no-install-recommends  \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip3 install numpy picamera[array]
