@@ -1,4 +1,4 @@
-setuptools
 numpy
+git+https://github.com/sabjorn/NumpyFb.git#egg=NumpyFb
 PILLOW
 picamera[array]

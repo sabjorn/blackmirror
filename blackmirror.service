@@ -1,0 +1,12 @@
+[Unit]
+Description=Starts blackmirror on boot
+After=multi-user.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=3
+ExecStart=/root/blackmirror/blackmirror.py
+
+[Install]
+WantedBy=multi-user.target

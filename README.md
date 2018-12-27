@@ -4,16 +4,21 @@ Project in collaboration with Marlene Jess where a live video feed is dispalted 
 
 Uses direct Linux framebuffer manipulation with Python.
 
+## Installation
+For installing on Raspbian, run:
+
+```
+sudo su
+export GITBRANCH=master
+wget -O - https://raw.githubusercontent.com/sabjorn/blackmirror/${GITBRANCH}/install.sh | bash
+```
+
 ## Components
 * Raspberry Pi 3
     * Python
 * [PI Camera](https://www.pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python/)
 
 ## Notes
-### 
-Setup information for PI Camera available [here](https://www.pyimagesearch.com/2015/03/30/accessing-the-raspberry-pi-camera-with-opencv-and-python/) although **OpenCV** is no longer used in this project.
-
-
 ### Screen Blanking
 To prevent screen from sleeping, must add:
 Based on [this](https://www.raspberrypi.org/documentation/configuration/screensaver.md)
