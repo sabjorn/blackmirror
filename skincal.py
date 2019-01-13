@@ -81,7 +81,7 @@ def fromBlocks(blocks, im):
     outimg = outimg.swapaxes(2,1).reshape(im.shape)
     return outimg
 
-def skincal_(im, low, high, blocksize=16):
+def skincal_(im, low, high, blocksize=16, format="bgr"):
     # makes an [x,y] accessor of blocksize x blocksize blocks
     blocks = im.reshape(
         im.shape[0]//blocksize, 
@@ -96,7 +96,11 @@ def skincal_(im, low, high, blocksize=16):
         blocksize, 3).swapaxes(1, 2)
 
     # test for skin
-    rg = blocks2[:,:,:,:,0] - blocks2[:,:,:,:,1] 
+    g = 1
+    if(format == "bgr"): r = 2
+    if (format == "rgb"): r = 0
+
+    rg = blocks2[:,:,:,:,r] - blocks2[:,:,:,:,g] 
     inx = np.greater(rg, low) & np.less(rg, high)
 
     # find blocksize indexes where skin exists

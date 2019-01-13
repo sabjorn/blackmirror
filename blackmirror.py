@@ -33,9 +33,15 @@ if __name__ == "__main__":
 
     # initialize the camera and grab a reference to the raw camera capture
     camera = PiCamera()
-    camera.resolution = Config.camres
-    camera.framerate = 30
-    rawCapture = PiRGBArray(camera, size=Config.camres)
+    camera.resolution = Config.resolution
+    camera.framerate = Config.framerate
+    camera.iso = Config.iso
+    camera.brightness = Config.brightness
+    camera.contrast = Config.contrast
+    camera.awb_mode = Config.awb_mode
+    camera.hflip = Config.hflip
+    camera.vflip = Config.vflip
+    rawCapture = PiRGBArray(camera, size=Config.resolution)
      
     # allow the camera to warmup
     time.sleep(0.1)
@@ -43,15 +49,15 @@ if __name__ == "__main__":
     # camera does not have alpha channel, but framebuffer ignores alpha
     alpha = np.zeros((fb.minsize, fb.minsize, 1), dtype='B')
 
-    offsety = int(fb.ysize/2) - int(Config.camres[0]/2)
-    offsetx = int(fb.xsize/2) - int(Config.camres[1]/2)
+    offsety = int(fb.ysize/2) - int(Config.resolution[0]/2)
+    offsetx = int(fb.xsize/2) - int(Config.resolution[1]/2)
 
     location = None
     skin = None
     im = None
     try:
         blocksize = 16
-        slices = generateArraySlices(Config.camres[0], Config.camres[1], Config.blocksize)
+        slices = generateArraySlices(Config.resolution[0], Config.resolution[1], Config.blocksize)
         for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
             now = time.time()
 
