@@ -1,38 +1,47 @@
 import numpy as np
 
-# can this be astracted more?
-# so that different effects can be used?
-def skincal(im, slices, low, high, format="bgr"):
+def skincal(im, low, high, blocksize=16, format="bgr"):
+    # makes an [x,y] accessor of blocksize x blocksize blocks
+    blocks = im.reshape(
+        im.shape[0]//blocksize, 
+        blocksize, 
+        im.shape[1]//blocksize, 
+        blocksize, 3).swapaxes(1, 2)
+
+    blocks2 = blocks.reshape(
+        im.shape[0]*im.shape[1]//(blocksize**2), 
+        blocksize, 
+        1,
+        blocksize, 3).swapaxes(1, 2)
+
+    # test for skin
     g = 1
     if(format == "bgr"): r = 2
     if (format == "rgb"): r = 0
 
-    skin = im[:,:, r] - im[:, :, g]
-    skin_mask = np.less(skin, high) & np.greater(skin, low)
-    
-    # this will give an interface of blocks[x, y, :, :, :] where x and y are the indexes of the subblocks
-    # blocks = img.reshape(img.shape[0]//8, 8, img.shape[1]//8, 8, 3).swapaxes(1, 2)
-    for array in slices:
-        if(np.any(skin_mask[array[0], array[1]])):
-            im[array[0], array[1], 0] = np.average(im[array[0], array[1], 0])
-            im[array[0], array[1], 1] = np.average(im[array[0], array[1], 1])
-            im[array[0], array[1], 2] = np.average(im[array[0], array[1], 2])
+    rg = blocks2[:,:,:,:,r] - blocks2[:,:,:,:,g] 
+    inx = np.greater(rg, low) & np.less(rg, high)
 
+    # find blocksize indexes where skin exists
+    average_indexes = np.any(np.any(np.any(inx, axis=1), axis=1), axis=1)
+    average_indexes = np.where(average_indexes)[0]
 
-def generateArraySlices(xsize, ysize, blocksize=16):
-    min_dim = np.min((xsize, ysize))
-    steps = int(min_dim / blocksize)
+    # is this faster?
+    for averages in average_indexes:
+        blocks2[averages, :, :, :, 0] = np.average(blocks2[averages, :, :, :, 0])
+        blocks2[averages, :, :, :, 1] = np.average(blocks2[averages, :, :, :, 1])
+        blocks2[averages, :, :, :, 2] = np.average(blocks2[averages, :, :, :, 2])
 
-    xv, yv = np.meshgrid(np.arange(blocksize), np.arange(blocksize))
-
-    arrayslices = []
-    for i in np.arange(0, steps):
-        for j in np.arange(0, steps):
-            arrayslices.append([xv + (i * blocksize), yv + (j * blocksize)])
-    return arrayslices
+    # converty back, 
+    # double `reshape` above destroys pointer, otherwise this would be unncessary
+    outim = blocks2.swapaxes(2,1).reshape(blocks.shape)
+    outim = outim.swapaxes(2,1).reshape(im.shape)
+    return outim
 
 """
-Blow currently doesn't work
+The functions below are for reference.
+'skincal' (above) uses the same steps BUT
+these functions operate on copies, not refrences :(
 """
 def toXY(im, blocksize):
     """ Convert to array of [x, y, blocksize, blocksize, 3]
@@ -80,45 +89,6 @@ def fromBlocks(blocks, im):
     outimg = blocks.swapaxes(2,1).reshape(blocks.shape)
     outimg = outimg.swapaxes(2,1).reshape(im.shape)
     return outimg
-
-def skincal_(im, low, high, blocksize=16, format="bgr"):
-    # makes an [x,y] accessor of blocksize x blocksize blocks
-    blocks = im.reshape(
-        im.shape[0]//blocksize, 
-        blocksize, 
-        im.shape[1]//blocksize, 
-        blocksize, 3).swapaxes(1, 2)
-
-    blocks2 = blocks.reshape(
-        im.shape[0]*im.shape[1]//(blocksize**2), 
-        blocksize, 
-        1,
-        blocksize, 3).swapaxes(1, 2)
-
-    # test for skin
-    g = 1
-    if(format == "bgr"): r = 2
-    if (format == "rgb"): r = 0
-
-    rg = blocks2[:,:,:,:,r] - blocks2[:,:,:,:,g] 
-    inx = np.greater(rg, low) & np.less(rg, high)
-
-    # find blocksize indexes where skin exists
-    average_indexes = np.any(np.any(np.any(inx, axis=1), axis=1), axis=1)
-    average_indexes = np.where(average_indexes)[0]
-
-    # is this faster?
-    for averages in average_indexes:
-        blocks2[averages, :, :, :, 0] = np.average(blocks2[averages, :, :, :, 0])
-        blocks2[averages, :, :, :, 1] = np.average(blocks2[averages, :, :, :, 1])
-        blocks2[averages, :, :, :, 2] = np.average(blocks2[averages, :, :, :, 2])
-
-    # converty back, 
-    # double `reshape` above destroys pointer, otherwise this would be unncessary
-    outim = blocks2.swapaxes(2,1).reshape(blocks.shape)
-    outim = outim.swapaxes(2,1).reshape(im.shape)
-    return outim
-
 
 
 if __name__ == '__main__':

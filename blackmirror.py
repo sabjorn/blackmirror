@@ -57,24 +57,11 @@ if __name__ == "__main__":
     im = None
     try:
         blocksize = 16
-        slices = generateArraySlices(Config.resolution[0], Config.resolution[1], Config.blocksize)
         for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
             now = time.time()
 
-            # make mutable
-            #im = np.copy(frame.array)
-            # process
-            # skin detection 100 < R - G < 500
-            # possible alternative https://softexpert.wordpress.com/2007/10/17/skin-color-detection/
-            # skincal(
-            #     im, 
-            #     slices, 
-            #     Config.thresh_low, 
-            #     Config.thresh_high
-            # )
-
             im = frame.array
-            im = skincal_(im, 
+            im = skincal(im, 
                 Config.thresh_low, 
                 Config.thresh_high, 
                 blocksize=Config.blocksize)
