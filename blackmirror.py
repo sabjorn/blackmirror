@@ -49,8 +49,8 @@ if __name__ == "__main__":
     # camera does not have alpha channel, but framebuffer ignores alpha
     alpha = np.zeros((fb.minsize, fb.minsize, 1), dtype='B')
 
-    offsety = int(fb.ysize/2) - int(Config.resolution[0]/2)
-    offsetx = int(fb.xsize/2) - int(Config.resolution[1]/2)
+    offsety = (fb.ysize - Config.resolution[0])//4
+    offsetx = (fb.xsize - Config.resolution[1])//4
 
     location = None
     skin = None
@@ -71,7 +71,7 @@ if __name__ == "__main__":
             im = np.dstack((im, alpha)) # camera has no opacity value
         
             # copy out
-            np.copyto(fb.array[:fb.minsize, :fb.minsize, :], im)
+            np.copyto(fb.array[:fb.minsize, offsety:fb.minsize + offsety, :], im)
             rawCapture.truncate(0)
             later = time.time()
             logging.debug("fps: {}".format(1/(later - now)))
