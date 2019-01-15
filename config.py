@@ -10,3 +10,4 @@ class Config(object):
     hflip = False
     vflip = True
     awb_mode = 'auto' # 'off', 'auto', 'sunlight', 'cloudy', 'shade', 'tungsten', 'fluorescent', 'incandescent', 'flash', 'horizon'
+    resize_scale = 1. # how big to resize, [0, 1]

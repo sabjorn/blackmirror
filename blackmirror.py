@@ -46,11 +46,19 @@ if __name__ == "__main__":
     # allow the camera to warmup
     time.sleep(0.1)
 
-    # camera does not have alpha channel, but framebuffer ignores alpha
-    alpha = np.zeros((fb.minsize, fb.minsize, 1), dtype='B')
+    # camera will round to nearest resolution, so we grab that back
+    resolution = camera.resolution
+    # find maximum scale val
+    max_scale = np.min((fb.xsize/resolution[0], fb.ysize/resolution[1]))
+    max_scale *= np.min((Config.resize_scale, 1.0)) # make sure we don't overscale
+    
+    w_scale = int(max_scale * resolution[0])
+    h_scale = int(max_scale * resolution[1])
+    
+    alpha = np.zeros((h_scale, w_scale, 1), dtype='B')
 
-    offsety = (fb.ysize - Config.resolution[0])//4
-    offsetx = (fb.xsize - Config.resolution[1])//4
+    offsety = (fb.ysize - h_scale)//2
+    offsetx = (fb.xsize - w_scale)//2
 
     location = None
     skin = None
@@ -67,11 +75,11 @@ if __name__ == "__main__":
                 blocksize=Config.blocksize)
 
             # pad with alpha
-            im = np.array(Image.fromarray(im).resize((fb.minsize, fb.minsize)))
+            im = np.array(Image.fromarray(im).resize((w_scale, h_scale))) # w/h are swapped for Image.resize()
             im = np.dstack((im, alpha)) # camera has no opacity value
         
             # copy out
-            np.copyto(fb.array[:fb.minsize, offsety:fb.minsize + offsety, :], im)
+            np.copyto(fb.array[offsety:h_scale+offsety, offsetx:w_scale+offsetx, :], im)
             rawCapture.truncate(0)
             later = time.time()
             logging.debug("fps: {}".format(1/(later - now)))
