@@ -2,7 +2,7 @@ class Config(object):
     thresh_low = 25
     thresh_high = 150
     blocksize = 16
-    resolution = (512,512)
+    resolution = (640, 480)
     framerate = 30
     iso = 400
     brightness = 50 #0-100
